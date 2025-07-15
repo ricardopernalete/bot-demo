@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp ChatBot Autónomo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f72585;
+            --rounded: 12px;
+            --rounded-sm: 8px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
+            --whatsapp-green: #075e54;
+            --whatsapp-light: #dcf8c6;
+            --whatsapp-dark: #128c7e;
+            --whatsapp-darker: #054d44;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            width: 100%;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            min-height: 90vh;
+            height: auto;
+            position: relative;
+            overflow: hidden;
+            background: white;
+            box-shadow: var(--shadow);
+            border-radius: var(--rounded);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+
+        /* Panel de Administración */
+        .admin-panel {
+            width: 100%;
+            background: white;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            max-height: 300px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .admin-header {
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-radius: var(--rounded);
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .admin-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .admin-header p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .admin-section {
+            margin-bottom: 16px;
+            background: var(--light);
+            padding: 12px;
+            border-radius: var(--rounded);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .admin-section h3 {
+            margin-bottom: 10px;
+            color: var(--secondary);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .admin-section h3 i {
+            font-size: 0.8rem;
+        }
+
+        .section-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.75rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        textarea, input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--rounded-sm);
+            font-size: 13px;
+            resize: vertical;
+            transition: var(--transition);
+            background: white;
+        }
+
+        textarea:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(72, 149, 239, 0.2);
+        }
+
+        .btn {
+            border: none;
+            border-radius: var(--rounded-sm);
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-whatsapp {
+            background: var(--whatsapp-green);
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            background: var(--whatsapp-dark);
+        }
+
+        .ticket-list {
+            list-style: none;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .ticket-item {
+            padding: 10px;
+            margin-bottom: 6px;
+            background: white;
+            border-radius: var(--rounded-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .ticket-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+            border-color: rgba(67, 97, 238, 0.2);
+        }
+
+        .ticket-item.active {
+            border-left: 4px solid var(--whatsapp-dark);
+            background-color: rgba(220, 248, 198, 0.3);
+        }
+
+        .ticket-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .ticket-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .ticket-preview {
+            font-size: 0.75rem;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ticket-time {
+            font-size: 0.65rem;
+            color: #999;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+
+        .ticket-badge {
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            min-width: 18px;
+            height: 18px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            margin-left: 6px;
+        }
+
+        .ticket-badge.warning {
+            background: var(--warning);
+        }
+
+        .ticket-badge.danger {
+            background: var(--danger);
+        }
+
+        /* Área del Chat */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #e5ddd5;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='a' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Ccircle fill='%23d4e6d1' cx='20' cy='20' r='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect fill='url(%23a)' width='800' height='800'/%3E%3C/svg%3E");
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 10px 12px;
+            background: var(--whatsapp-green);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--whatsapp-green);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-status {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chat-status .indicator {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ad504;
+            display: inline-block;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .chat-action-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .message {
+            max-width: 85%;
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            border-radius: 7.5px;
+            position: relative;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-out;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background-color: var(--whatsapp-light);
+            margin-left: auto;
+            border-bottom-right-radius: 0;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
+        }
+
+        .bot-message {
+            background-color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 0;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-time {
+            font-size: 0.65rem;
+            color: #666;
+            text-align: right;
+            margin-top: 2px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .message-time i {
+            font-size: 0.55rem;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border-top: 1px solid #ddd;
+            align-items: center;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 21px;
+            outline: none;
+            font-size: 14px;
+            background-color: white;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        #user-input:focus {
+            box-shadow: 0 0 0 2px rgba(7, 94, 84, 0.2);
+        }
+
+        #send-btn {
+            margin-left: 8px;
+            padding: 0 14px;
+            background-color: var(--whatsapp-green);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        #send-btn:hover {
+            background-color: var(--whatsapp-dark);
+            transform: scale(1.05);
+        }
+
+        #send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 6px 10px;
+            background-color: white;
+            border-radius: 7.5px;
+            width: fit-content;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            gap: 5px;
+        }
+
+        .typing-text {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .typing-dot {
+            width: 5px;
+            height: 5px;
+            background-color: #333;
+            border-radius: 50%;
+            margin: 0 1px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: white;
+            padding: 10px 14px;
+            border-radius: var(--rounded-sm);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+            max-width: 280px;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-icon.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .notification-icon.warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .notification-icon.error {
+            background: var(--danger);
+            color: white;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+            font-size: 0.85rem;
+        }
+
+        .notification-message {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: 6px;
+        }
+
+        /* Stats */
+        .stats-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: calc(33% - 6px);
+            background: white;
+            border-radius: var(--rounded-sm);
+            padding: 10px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: #666;
+            text-align: center;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 100px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -50px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.7rem;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .app-container {
+                flex-direction: row;
+                min-height: 90vh;
+                max-height: 90vh;
+            }
+            
+            .admin-panel {
+                width: 350px;
+                max-height: none;
+                border-right: 1px solid rgba(0, 0, 0, 0.08);
+                border-bottom: none;
+            }
+            
+            .chat-container {
+                min-height: 90vh;
+            }
+
+            .stats-container {
+                flex-direction: row;
+            }
+
+            .stat-card {
+                min-width: calc(33% - 6px);
+            }
+        }
+
+        @media (min-width: 992px) {
+            .admin-panel {
+                width: 400px;
+            }
+            
+            .admin-section {
+                padding: 16px;
+            }
+            
+            .message {
+                max-width: 75%;
+                font-size: 14.5px;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Panel de Administración -->
+        <div class="admin-panel" id="admin-panel">
+            <div class="admin-header">
+                <h2>Panel de Control</h2>
+                <p>Administra tu chatbot de WhatsApp</p>
+            </div>
+            
+            <div class="admin-section">
+                <h3><i class="fas fa-chart-line"></i> Estadísticas</h3>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-tickets">0</div>
+                        <div class="stat-label">Tickets</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="active-chats">0</div>
+                        <div class="stat-label">Chats Activos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="catalogs-sent">0</div>
+                        <div class="stat-label">Catálogos Enviados</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h3><i class="fas fa-comment-dots"></i> Mensajes Automáticos</h3>
+                <label class="section-label">Saludo inicial</label>
+                <textarea id="greeting-message" rows="3" placeholder="Ej: Hola 👋 qué tal !! bonito día, a tus órdenes. 💗✨"></textarea>
+                
+                <label class="section-label">Lista de precios (uno por línea)</label>
+                <textarea id="price-list" rows="4" placeholder="Ej: Charm: $300\nCadena: $370"></textarea>
+                
+                <label class="section-label">Mensaje de entrega</label>
+                <textarea id="delivery-message" rows="2" placeholder="Ej: Hago envíos por paquetería a toda la república"></textarea>
+                
+                <label class="section-label">Promociones (una por línea)</label>
+                <textarea id="promotions" rows="5" placeholder="Ej: 1) Compra 5 charms y te salen en $250 cada uno"></textarea>
+                
+                <label class="section-label">Pregunta por catálogo</label>
+                <textarea id="catalog-question" rows="2" placeholder="Ej: ¿Gustas que te envíe el catálogo?"></textarea>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <button class="btn btn-primary" id="save-messages">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button class="btn btn-secondary" id="reset-messages">
+                        <i class="fas fa-undo"></i> Restablecer
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h3><i class="fas fa-images"></i> Mensajes de Catálogo</h3>
+                <label class="section-label">Enlace al catálogo</label>
+                <textarea id="catalog-link" rows="2" placeholder="Ej: https://ejemplo.com/catalogo.pdf"></textarea>
+                
+                <label class="section-label">Confirmación de catálogo</label>
+                <textarea id="catalog-confirm" rows="2" placeholder="Ej: ¿Pudiste abrirlo?"></textarea>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <button class="btn btn-primary" id="save-catalog">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button class="btn btn-secondary" id="test-catalog">
+                        <i class="fas fa-paper-plane"></i> Probar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h3><i class="fas fa-ticket-alt"></i> Tickets de Clientes</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <button class="btn btn-whatsapp" id="new-ticket">
+                        <i class="fas fa-plus"></i> Nuevo Ticket
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="clear-tickets">
+                        <i class="fas fa-trash"></i> Limpiar
+                    </button>
+                </div>
+                <ul class="ticket-list" id="ticket-list">
+                    <!-- Tickets se generarán aquí -->
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Área del Chat -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-avatar" id="chat-avatar">C</div>
+                <div class="chat-info">
+                    <div class="chat-title" id="chat-title">ChatBot WhatsApp</div>
+                    <div class="chat-status">
+                        <span class="indicator"></span>
+                        <span id="chat-status">En línea</span>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="chat-action-btn tooltip" id="search-chat">
+                        <i class="fas fa-search"></i>
+                        <span class="tooltiptext">Buscar en chat</span>
+                    </button>
+                    <button class="chat-action-btn tooltip" id="export-chat">
+                        <i class="fas fa-download"></i>
+                        <span class="tooltiptext">Exportar chat</span>
+                    </button>
+                    <button class="chat-action-btn tooltip" id="info-chat">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltiptext">Información</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <!-- Mensajes aparecerán aquí -->
+                <div style="text-align: center; margin: auto; color: #666; font-size: 0.85rem;">
+                    <p>Selecciona un ticket o crea uno nuevo para comenzar</p>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" id="user-input" placeholder="Escribe un mensaje..." autocomplete="off">
+                <button id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón de menú móvil -->
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-cog"></i>
+    </button>
+
+    <!-- Notificaciones -->
+    <div class="notification" id="notification">
+        <div class="notification-icon success">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">Éxito</div>
+            <div class="notification-message">Los mensajes se han guardado correctamente</div>
+        </div>
+        <button class="notification-close">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <script>
+        // Clase principal de la aplicación
+        class WhatsAppBot {
+            constructor() {
+                // Datos iniciales
+                this.defaultData = {
+                    messages: {
+                        greeting: "Hola 👋 qué tal !! bonito día, a tus órdenes. 💗✨",
+                        prices: [
+                            "Costo charms: $300",
+                            "Cadena de seguridad: $370",
+                            "Costo brazaletes: $550",
+                            "Costo anillos: $300",
+                            "Costo aretes: $300",
+                            "Collares: $650",
+                            "Cadena de serpiente: $700",
+                            "Cadena eslabón cubano: $999",
+                            "Collar TOUS: $1,000"
+                        ],
+                        delivery: "En caso de que seas de Guadalajara puedo entregarte en un punto de la ciudad☺️🇲🇽. Hago envíos por paquetería a toda la república🇲🇽 🚚",
+                        promotions: [
+                            "1) compra 5 charms o más y te salen en $250 cada uno",
+                            "2) 3 charms y 1 brazalete por $999",
+                            "3) En compra un collar y aretes por $650",
+                            "4) Collar y 1 charms por $850",
+                            "5) 2 Pulseras por $999",
+                            "6) Arete + charm $750",
+                            "7) set collar, anillo, aretes y brazalete $1400",
+                            "8) Collar y anillo por $750"
+                        ],
+                        catalogQuestion: "¿Gustas que te envíe el catálogo?\n(escribe si o no)\n\n1.- Si.\n2.- No.",
+                        catalogLink: "✨Catálogo aquí 👇🏽 (Brazaletes Charms)\n\nhttps://manybot-files.s3.eu-central-1.amazonaws.com/fb654440/ca/2025/07/01/7340ffef54f84ac3453fbd42f65c1272/Catalogo_Charmland_2025_JULIO_compressed.pdf",
+                        catalogConfirm: "Pudiste abrirlo? 💕💕"
+                    },
+                    tickets: [],
+                    currentTicket: null,
+                    stats: {
+                        totalTickets: 0,
+                        catalogsSent: 0,
+                        activeChats: 0
+                    },
+                    catalogKeywords: ['si', 'porfa', 'por fa', 'porfavor', 'por favor', 'xfa', 'xfi', 'porfi', 'porfis', 'ok', 'okay', 'okey', 'gracias', 'catalogo', 'catálogo']
+                };
+                
+                this.data = JSON.parse(JSON.stringify(this.defaultData));
+                
+                // Elementos del DOM
+                this.elements = {
+                    chatMessages: document.getElementById('chat-messages'),
+                    userInput: document.getElementById('user-input'),
+                    sendBtn: document.getElementById('send-btn'),
+                    ticketList: document.getElementById('ticket-list'),
+                    chatTitle: document.getElementById('chat-title'),
+                    chatAvatar: document.getElementById('chat-avatar'),
+                    chatStatus: document.getElementById('chat-status'),
+                    notification: document.getElementById('notification'),
+                    totalTickets: document.getElementById('total-tickets'),
+                    activeChats: document.getElementById('active-chats'),
+                    catalogsSent: document.getElementById('catalogs-sent'),
+                    adminPanel: document.getElementById('admin-panel'),
+                    mobileMenuToggle: document.getElementById('mobile-menu-toggle')
+                };
+                
+                // Estado del menú móvil
+                this.mobileMenuVisible = false;
+                
+                // Inicialización
+                this.init();
+            }
+            
+            init() {
+                this.loadSavedData();
+                this.setupEventListeners();
+                this.setupMobileMenu();
+                
+                if (this.data.tickets.length === 0) {
+                    this.createNewTicket();
+                } else {
+                    this.switchTicket(0);
+                }
+                
+                this.updateStats();
+            }
+            
+            // Configurar menú móvil
+            setupMobileMenu() {
+                // Mostrar/ocultar menú en móvil
+                this.elements.mobileMenuToggle.addEventListener('click', () => {
+                    this.mobileMenuVisible = !this.mobileMenuVisible;
+                    this.elements.adminPanel.style.display = this.mobileMenuVisible ? 'flex' : 'none';
+                    this.elements.mobileMenuToggle.innerHTML = this.mobileMenuVisible ? 
+                        '<i class="fas fa-times"></i>' : '<i class="fas fa-cog"></i>';
+                });
+                
+                // Ocultar menú al hacer clic fuera
+                document.addEventListener('click', (e) => {
+                    if (this.mobileMenuVisible && 
+                        !this.elements.adminPanel.contains(e.target) && 
+                        !this.elements.mobileMenuToggle.contains(e.target)) {
+                        this.mobileMenuVisible = false;
+                        this.elements.adminPanel.style.display = 'none';
+                        this.elements.mobileMenuToggle.innerHTML = '<i class="fas fa-cog"></i>';
+                    }
+                });
+                
+                // Mostrar/ocultar botón de menú según el tamaño de pantalla
+                const handleResize = () => {
+                    if (window.innerWidth < 768) {
+                        this.elements.mobileMenuToggle.style.display = 'flex';
+                        this.elements.adminPanel.style.display = 'none';
+                        this.mobileMenuVisible = false;
+                        this.elements.mobileMenuToggle.innerHTML = '<i class="fas fa-cog"></i>';
+                    } else {
+                        this.elements.mobileMenuToggle.style.display = 'none';
+                        this.elements.adminPanel.style.display = 'flex';
+                    }
+                };
+                
+                window.addEventListener('resize', handleResize);
+                handleResize();
+            }
+            
+            // Cargar datos guardados
+            loadSavedData() {
+                const savedData = localStorage.getItem('whatsappBotData');
+                if (savedData) {
+                    try {
+                        const parsedData = JSON.parse(savedData);
+                        
+                        // Merge con datos por defecto para asegurar que todos los campos existan
+                        this.data = {
+                            ...this.defaultData,
+                            ...parsedData,
+                            messages: {
+                                ...this.defaultData.messages,
+                                ...(parsedData.messages || {})
+                            },
+                            stats: {
+                                ...this.defaultData.stats,
+                                ...(parsedData.stats || {})
+                            }
+                        };
+                        
+                        // Actualizar textareas
+                        document.getElementById('greeting-message').value = this.data.messages.greeting;
+                        document.getElementById('price-list').value = this.data.messages.prices.join("\n");
+                        document.getElementById('delivery-message').value = this.data.messages.delivery;
+                        document.getElementById('promotions').value = this.data.messages.promotions.join("\n");
+                        document.getElementById('catalog-question').value = this.data.messages.catalogQuestion;
+                        document.getElementById('catalog-link').value = this.data.messages.catalogLink;
+                        document.getElementById('catalog-confirm').value = this.data.messages.catalogConfirm;
+                    } catch (e) {
+                        console.error("Error al cargar datos guardados:", e);
+                        this.showNotification("Error al cargar datos", "Se cargarán los valores por defecto", "error");
+                    }
+                }
+                
+                this.updateTicketList();
+            }
+            
+            // Guardar datos
+            saveData() {
+                try {
+                    localStorage.setItem('whatsappBotData', JSON.stringify(this.data));
+                } catch (e) {
+                    console.error("Error al guardar datos:", e);
+                    this.showNotification("Error", "No se pudieron guardar los datos", "error");
+                }
+            }
+            
+            // Actualizar estadísticas
+            updateStats() {
+                this.elements.totalTickets.textContent = this.data.stats.totalTickets;
+                this.elements.activeChats.textContent = this.data.tickets.length;
+                this.elements.catalogsSent.textContent = this.data.stats.catalogsSent;
+            }
+            
+            // Mostrar notificación
+            showNotification(title, message, type = "success") {
+                const notification = this.elements.notification;
+                const icon = notification.querySelector('.notification-icon');
+                const titleEl = notification.querySelector('.notification-title');
+                const messageEl = notification.querySelector('.notification-message');
+                
+                // Configurar según el tipo
+                icon.className = `notification-icon ${type}`;
+                icon.innerHTML = type === "success" ? '<i class="fas fa-check"></i>' : 
+                                type === "warning" ? '<i class="fas fa-exclamation"></i>' : 
+                                '<i class="fas fa-times"></i>';
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                
+                // Mostrar notificación
+                notification.classList.add('show');
+                
+                // Ocultar después de 3 segundos
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // Actualizar lista de tickets
+            updateTicketList() {
+                this.elements.ticketList.innerHTML = '';
+                
+                if (this.data.tickets.length === 0) {
+                    const emptyMsg = document.createElement('li');
+                    emptyMsg.className = 'ticket-item';
+                    emptyMsg.textContent = "No hay tickets";
+                    this.elements.ticketList.appendChild(emptyMsg);
+                    return;
+                }
+                
+                this.data.tickets.forEach((ticket, index) => {
+                    const li = document.createElement('li');
+                    li.className = `ticket-item ${this.data.currentTicket === index ? 'active' : ''}`;
+                    
+                    // Obtener el último mensaje para el preview
+                    const lastMessage = ticket.messages.length > 0 ? 
+                        ticket.messages[ticket.messages.length - 1].text : 
+                        "Nuevo ticket";
+                    
+                    // Formatear la hora del último mensaje
+                    const lastTime = ticket.messages.length > 0 ? 
+                        this.formatTime(ticket.messages[ticket.messages.length - 1].timestamp) : 
+                        this.formatTime(new Date());
+                    
+                    li.innerHTML = `
+                        <div class="ticket-info">
+                            <div class="ticket-name">${ticket.clientName}</div>
+                            <div class="ticket-preview">${this.truncate(lastMessage, 30)}</div>
+                        </div>
+                        <div class="ticket-time">${lastTime}</div>
+                        ${ticket.unread ? `<span class="ticket-badge ${ticket.unread > 5 ? 'warning' : ''} ${ticket.unread > 10 ? 'danger' : ''}">${ticket.unread}</span>` : ''}
+                    `;
+                    
+                    li.addEventListener('click', () => {
+                        this.switchTicket(index);
+                        // En móvil, ocultar el panel después de seleccionar un ticket
+                        if (window.innerWidth < 768) {
+                            this.mobileMenuVisible = false;
+                            this.elements.adminPanel.style.display = 'none';
+                            this.elements.mobileMenuToggle.innerHTML = '<i class="fas fa-cog"></i>';
+                        }
+                    });
+                    this.elements.ticketList.appendChild(li);
+                });
+            }
+            
+            // Formatear hora
+            formatTime(date) {
+                if (typeof date === 'string') date = new Date(date);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            // Acortar texto
+            truncate(text, length) {
+                return text.length > length ? text.substring(0, length) + '...' : text;
+            }
+            
+            // Cambiar de ticket
+            switchTicket(index) {
+                if (index < 0 || index >= this.data.tickets.length) return;
+                
+                this.data.currentTicket = index;
+                this.renderChat();
+                this.updateTicketList();
+                
+                const ticket = this.data.tickets[index];
+                this.elements.chatTitle.textContent = ticket.clientName;
+                this.elements.chatAvatar.textContent = ticket.clientName.charAt(0).toUpperCase();
+                this.elements.chatStatus.textContent = "En línea";
+                
+                // Marcar como leído
+                if (ticket.unread) {
+                    ticket.unread = 0;
+                    this.saveData();
+                    this.updateTicketList();
+                }
+            }
+            
+            // Renderizar chat
+            renderChat() {
+                this.elements.chatMessages.innerHTML = '';
+                
+                if (this.data.currentTicket !== null && this.data.currentTicket < this.data.tickets.length) {
+                    const ticket = this.data.tickets[this.data.currentTicket];
+                    
+                    if (ticket.messages.length === 0) {
+                        const emptyMsg = document.createElement('div');
+                        emptyMsg.style.textAlign = 'center';
+                        emptyMsg.style.margin = 'auto';
+                        emptyMsg.style.color = '#666';
+                        emptyMsg.style.fontSize = '0.85rem';
+                        emptyMsg.innerHTML = `<p>No hay mensajes en este ticket</p>`;
+                        this.elements.chatMessages.appendChild(emptyMsg);
+                        return;
+                    }
+                    
+                    ticket.messages.forEach(msg => {
+                        this.addMessage(msg.text, msg.isUser, false);
+                    });
+                    
+                    this.elements.chatMessages.scrollTop = this.elements.chatMessages.scrollHeight;
+                }
+            }
+            
+            // Crear nuevo ticket
+            createNewTicket() {
+                const newTicket = {
+                    id: Date.now(),
+                    clientName: `Cliente ${this.data.tickets.length + 1}`,
+                    messages: [],
+                    unread: 0,
+                    state: {
+                        isFirstMessage: true,
+                        initialSequenceSent: false,
+                        catalogSent: false,
+                        waitingCatalogResponse: false,
+                        lastInteraction: new Date()
+                    }
+                };
+                
+                this.data.tickets.push(newTicket);
+                this.data.stats.totalTickets++;
+                this.data.currentTicket = this.data.tickets.length - 1;
+                this.saveData();
+                this.updateTicketList();
+                this.updateStats();
+                this.renderChat();
+                
+                this.elements.chatTitle.textContent = newTicket.clientName;
+                this.elements.chatAvatar.textContent = newTicket.clientName.charAt(0).toUpperCase();
+                
+                // Simular primer mensaje del cliente
+                setTimeout(() => {
+                    this.addMessage("Hola, me interesan sus productos", true);
+                    setTimeout(() => this.sendInitialSequence(), 1000);
+                }, 500);
+                
+                // En móvil, ocultar el panel después de crear un ticket
+                if (window.innerWidth < 768) {
+                    this.mobileMenuVisible = false;
+                    this.elements.adminPanel.style.display = 'none';
+                    this.elements.mobileMenuToggle.innerHTML = '<i class="fas fa-cog"></i>';
+                }
+            }
+            
+            // Añadir mensaje al chat
+            addMessage(text, isUser = false, saveToHistory = true) {
+                // Sanitizar el texto para evitar XSS
+                text = this.sanitize(text);
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                
+                // Convertir URLs en enlaces clickables
+                const textWithLinks = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                messageDiv.innerHTML = textWithLinks;
+                
+                // Añadir hora del mensaje
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                const now = new Date();
+                timeDiv.innerHTML = `
+                    <span>${this.formatTime(now)}</span>
+                    ${isUser ? '<i class="fas fa-check-double"></i>' : ''}
+                `;
+                
+                messageDiv.appendChild(timeDiv);
+                this.elements.chatMessages.appendChild(messageDiv);
+                this.elements.chatMessages.scrollTop = this.elements.chatMessages.scrollHeight;
+                
+                if (saveToHistory && this.data.currentTicket !== null) {
+                    const ticket = this.data.tickets[this.data.currentTicket];
+                    ticket.messages.push({ 
+                        text, 
+                        isUser, 
+                        timestamp: now 
+                    });
+                    ticket.state.lastInteraction = now;
+                    
+                    // Si no es el ticket activo, aumentar contador de no leídos
+                    if (this.data.currentTicket !== this.data.tickets.findIndex(t => t.id === ticket.id)) {
+                        ticket.unread = (ticket.unread || 0) + 1;
+                    }
+                    
+                    this.saveData();
+                    this.updateTicketList();
+                }
+            }
+            
+            // Sanitizar input
+            sanitize(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Mostrar "escribiendo..."
+            showTyping() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator';
+                typingDiv.id = 'typing-indicator';
+                typingDiv.innerHTML = `
+                    <div class="typing-text">escribiendo...</div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                `;
+                this.elements.chatMessages.appendChild(typingDiv);
+                this.elements.chatMessages.scrollTop = this.elements.chatMessages.scrollHeight;
+            }
+            
+            // Ocultar "escribiendo..."
+            hideTyping() {
+                const typing = document.getElementById('typing-indicator');
+                if (typing) typing.remove();
+            }
+            
+            // Enviar secuencia de mensajes
+            sendSequence(messages, delay = 1500, callback = null) {
+                let currentDelay = 500;
+                messages.forEach((msg, i) => {
+                    setTimeout(() => {
+                        this.showTyping();
+                        setTimeout(() => {
+                            this.hideTyping();
+                            this.addMessage(msg);
+                            if (callback && i === messages.length - 1) callback();
+                        }, 1000);
+                    }, currentDelay);
+                    currentDelay += delay;
+                });
+            }
+            
+            // Enviar secuencia inicial
+            sendInitialSequence() {
+                if (this.data.currentTicket === null) return;
+                
+                const ticket = this.data.tickets[this.data.currentTicket];
+                if (ticket.state.initialSequenceSent) return;
+                
+                ticket.state.initialSequenceSent = true;
+                ticket.state.isFirstMessage = false;
+                
+                const messages = [
+                    this.data.messages.greeting,
+                    this.data.messages.prices.join("\n"),
+                    this.data.messages.delivery,
+                    "Puedes aprovechar las 8 promociones que tenemos 🥰✨\n\n" + this.data.messages.promotions.join("\n"),
+                    this.data.messages.catalogQuestion
+                ];
+                
+                this.sendSequence(messages, 2000, () => {
+                    ticket.state.waitingCatalogResponse = true;
+                    this.saveData();
+                });
+            }
+            
+            // Enviar catálogo
+            sendCatalog() {
+                if (this.data.currentTicket === null) return;
+                
+                const ticket = this.data.tickets[this.data.currentTicket];
+                if (ticket.state.catalogSent) return;
+                
+                ticket.state.catalogSent = true;
+                ticket.state.waitingCatalogResponse = false;
+                this.data.stats.catalogsSent++;
+                this.updateStats();
+                
+                const messages = [
+                    this.data.messages.catalogLink,
+                    "Puedes aprovechar las 8 promociones que tenemos 🥰✨\n\n" + this.data.messages.promotions.join("\n"),
+                    this.data.messages.catalogConfirm
+                ];
+                
+                this.sendSequence(messages);
+                this.saveData();
+            }
+            
+            // Procesar respuesta del usuario
+            processUserResponse(message) {
+                if (this.data.currentTicket === null) return null;
+                
+                const ticket = this.data.tickets[this.data.currentTicket];
+                const lowerMsg = message.toLowerCase().trim();
+                
+                // Si está esperando respuesta sobre el catálogo
+                if (ticket.state.waitingCatalogResponse) {
+                    const wantsCatalog = this.data.catalogKeywords.some(kw => lowerMsg.includes(kw));
+                    if (wantsCatalog) return { action: 'send_catalog' };
+                    
+                    const noCatalog = ['no', 'nah', 'nop', 'nel', 'después', 'luego'].some(kw => lowerMsg.includes(kw));
+                    if (noCatalog) return { response: "Perfecto, cuando quieras verlo solo dime 😊" };
+                }
+                
+                // Detectar intenciones
+                if (/hola|buen(a|o)s (días|tardes|noches)|qué tal|como estás/i.test(lowerMsg)) {
+                    return { response: "¡Hola! 😊 ¿En qué puedo ayudarte hoy?" };
+                }
+                
+                if (/adi[óo]s|chao|bye|nos vemos|hasta luego/i.test(lowerMsg)) {
+                    return { response: "¡Hasta luego! 👋 Que tengas un buen día" };
+                }
+                
+                if (/gracias|thank you|te lo agradezco/i.test(lowerMsg)) {
+                    return { response: "De nada 😊 ¡Es un placer ayudar!" };
+                }
+                
+                if (/catalogo|catálogo|fotos|imágenes|productos|ver más/i.test(lowerMsg)) {
+                    return { response: "¿Te gustaría que te envíe nuestro catálogo? (escribe si o no)", setWaiting: true };
+                }
+                
+                if (/cuánto cuesta|precio|valor|cost[ao]|tiene un precio|sale en/i.test(lowerMsg)) {
+                    return { response: "Aquí tienes nuestros precios:\n\n" + this.data.messages.prices.join("\n") };
+                }
+                
+                if (/promo|descuento|oferta|combo|pack/i.test(lowerMsg)) {
+                    return { response: "¡Tenemos estas promociones! 🥰✨\n\n" + this.data.messages.promotions.join("\n") };
+                }
+                
+                return { response: "No entendí bien tu mensaje... ¿Podrías decirlo de otra forma?" };
+            }
+            
+            // Manejar mensaje del usuario
+            handleUserMessage() {
+                if (this.data.currentTicket === null) {
+                    this.showNotification("Error", "Por favor selecciona o crea un ticket primero", "error");
+                    return;
+                }
+                
+                const message = this.elements.userInput.value.trim();
+                if (!message) return;
+
+                this.addMessage(message, true);
+                this.elements.userInput.value = '';
+
+                const ticket = this.data.tickets[this.data.currentTicket];
+                
+                // Primer mensaje del usuario
+                if (ticket.state.isFirstMessage) {
+                    ticket.state.isFirstMessage = false;
+                    setTimeout(() => this.sendInitialSequence(), 1000);
+                    return;
+                }
+
+                // Procesar respuesta
+                const { action, response, setWaiting } = this.processUserResponse(message);
+                
+                setTimeout(() => {
+                    this.showTyping();
+                    setTimeout(() => {
+                        this.hideTyping();
+                        
+                        if (action === 'send_catalog') {
+                            this.sendCatalog();
+                        } else if (response) {
+                            this.addMessage(response);
+                            if (setWaiting) {
+                                ticket.state.waitingCatalogResponse = true;
+                                this.saveData();
+                            }
+                        }
+                    }, 1500);
+                }, 500);
+            }
+            
+            // Guardar mensajes desde el panel
+            saveMessages() {
+                this.data.messages.greeting = document.getElementById('greeting-message').value;
+                this.data.messages.prices = document.getElementById('price-list').value.split("\n").filter(line => line.trim());
+                this.data.messages.delivery = document.getElementById('delivery-message').value;
+                this.data.messages.promotions = document.getElementById('promotions').value.split("\n").filter(line => line.trim());
+                this.data.messages.catalogQuestion = document.getElementById('catalog-question').value;
+                this.saveData();
+                this.showNotification("Éxito", "Mensajes guardados correctamente");
+            }
+            
+            // Restablecer mensajes a valores por defecto
+            resetMessages() {
+                if (confirm("¿Estás seguro de que quieres restablecer los mensajes a los valores por defecto?")) {
+                    this.data.messages = JSON.parse(JSON.stringify(this.defaultData.messages));
+                    
+                    // Actualizar textareas
+                    document.getElementById('greeting-message').value = this.data.messages.greeting;
+                    document.getElementById('price-list').value = this.data.messages.prices.join("\n");
+                    document.getElementById('delivery-message').value = this.data.messages.delivery;
+                    document.getElementById('promotions').value = this.data.messages.promotions.join("\n");
+                    document.getElementById('catalog-question').value = this.data.messages.catalogQuestion;
+                    
+                    this.saveData();
+                    this.showNotification("Éxito", "Mensajes restablecidos a valores por defecto");
+                }
+            }
+            
+            // Guardar catálogo desde el panel
+            saveCatalog() {
+                this.data.messages.catalogLink = document.getElementById('catalog-link').value;
+                this.data.messages.catalogConfirm = document.getElementById('catalog-confirm').value;
+                this.saveData();
+                this.showNotification("Éxito", "Catálogo guardado correctamente");
+            }
+            
+            // Probar catálogo
+            testCatalog() {
+                const messages = [
+                    this.data.messages.catalogLink,
+                    this.data.messages.catalogConfirm
+                ];
+                
+                this.sendSequence(messages);
+            }
+            
+            // Limpiar tickets
+            clearTickets() {
+                if (confirm("¿Estás seguro de que quieres eliminar todos los tickets? Esta acción no se puede deshacer.")) {
+                    this.data.tickets = [];
+                    this.data.currentTicket = null;
+                    this.saveData();
+                    this.updateTicketList();
+                    this.renderChat();
+                    
+                    this.elements.chatTitle.textContent = "ChatBot WhatsApp";
+                    this.elements.chatAvatar.textContent = "C";
+                    
+                    this.showNotification("Éxito", "Todos los tickets han sido eliminados");
+                }
+            }
+            
+            // Exportar chat
+            exportChat() {
+                if (this.data.currentTicket === null) {
+                    this.showNotification("Error", "No hay chat para exportar", "error");
+                    return;
+                }
+                
+                const ticket = this.data.tickets[this.data.currentTicket];
+                let chatText = `Chat con ${ticket.clientName}\n\n`;
+                
+                ticket.messages.forEach(msg => {
+                    const prefix = msg.isUser ? "Tú: " : "Bot: ";
+                    chatText += `${prefix}${msg.text}\n`;
+                });
+                
+                // Crear blob y descargar
+                const blob = new Blob([chatText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `chat-${ticket.clientName}-${new Date().toISOString().slice(0, 10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showNotification("Éxito", "Chat exportado correctamente");
+            }
+            
+            // Configurar event listeners
+            setupEventListeners() {
+                // Enviar mensaje
+                this.elements.sendBtn.addEventListener('click', () => this.handleUserMessage());
+                this.elements.userInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.handleUserMessage();
+                });
+                
+                // Panel de administración
+                document.getElementById('save-messages').addEventListener('click', () => this.saveMessages());
+                document.getElementById('reset-messages').addEventListener('click', () => this.resetMessages());
+                document.getElementById('save-catalog').addEventListener('click', () => this.saveCatalog());
+                document.getElementById('test-catalog').addEventListener('click', () => this.testCatalog());
+                document.getElementById('new-ticket').addEventListener('click', () => this.createNewTicket());
+                document.getElementById('clear-tickets').addEventListener('click', () => this.clearTickets());
+                
+                // Chat
+                document.getElementById('export-chat').addEventListener('click', () => this.exportChat());
+                
+                // Notificación
+                document.querySelector('.notification-close').addEventListener('click', () => {
+                    this.elements.notification.classList.remove('show');
+                });
+                
+                // Debounce para el input
+                let debounceTimer;
+                this.elements.userInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        // Aquí podríamos añadir autocompletado o sugerencias
+                    }, 300);
+                });
+            }
+        }
+
+        // Iniciar la aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            const whatsAppBot = new WhatsAppBot();
+        });
+    </script>
+</body>
+</html>
